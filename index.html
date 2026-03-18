@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>АгроУМ — Возроди свет</title>
+  <title>АгроУМ — Возрождение мира</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -12,245 +12,158 @@
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-badge">АгроУМ</div>
-        <div class="brand-text">
+        <div class="brand-pill">АгроУМ</div>
+        <div>
           <div class="brand-title">Возрождение мира</div>
           <div class="brand-subtitle">Трогаем. Нюхаем. Исследуем. Думаем.</div>
         </div>
       </div>
 
-      <button id="resetProgressBtn" class="ghost-btn" type="button">
-        Сбросить
-      </button>
+      <button id="resetAllBtn" class="ghost-btn" type="button">Сбросить всё</button>
     </header>
 
     <main class="main-wrap">
-      <!-- СТАРТ -->
-      <section id="welcomeScreen" class="screen active">
+      <!-- ГЛАВНЫЙ ЭКРАН -->
+      <section id="homeScreen" class="screen active">
         <div class="card hero-card">
           <div class="hero-left">
-            <div class="mini-label">Уровень 1</div>
-            <h1>Возроди свет</h1>
+            <div class="mini-badge">5 уровней</div>
+            <h1>Спаси мир вместе с АгроУМ</h1>
             <p class="hero-text">
-              Помоги юным учёным АгроУМ вернуть свет в мир.
-              Перетащи детали на свои места и зажги лампочку.
+              Мир уснул. Свет погас. Вода стала мутной. Но юные учёные могут всё исправить.
             </p>
-
-            <div class="hero-row">
-              <div class="mini-chip">🍋 лимон</div>
-              <div class="mini-chip">🔩 пластинки</div>
-              <div class="mini-chip">🔴⚫ провода</div>
-              <div class="mini-chip">💡 свет</div>
-            </div>
-
-            <button id="startGameBtn" class="primary-btn big-btn" type="button">
-              Начать
+            <button id="startAdventureBtn" class="primary-btn big-btn" type="button">
+              Начать путь
             </button>
           </div>
 
           <div class="hero-right">
-            <div class="hero-illustration">
-              <div class="hero-blob blob-1"></div>
-              <div class="hero-blob blob-2"></div>
-
-              <div class="hero-kids-card">
-                <div class="hero-kid">🧒</div>
-                <div class="hero-kid">👧</div>
-                <div class="hero-leaf">🍃</div>
-              </div>
-
-              <div class="hero-lamp-wrap">
-                <div id="welcomeGlow" class="lamp-glow"></div>
-                <div id="welcomeLamp" class="lamp-emoji">💡</div>
-                <div class="hero-lamp-text">Свет спит... пока</div>
-              </div>
+            <div class="hero-visual">
+              <div class="blob blue"></div>
+              <div class="blob green"></div>
+              <div class="hero-icons">🧒 👧 🍋 💧 🍄 🌋</div>
+              <div class="hero-caption">Собирай. Перетаскивай. Оживляй.</div>
             </div>
+          </div>
+        </div>
+
+        <div class="card map-card">
+          <div class="mini-badge">Карта уровней</div>
+          <h2>Выбери уровень</h2>
+
+          <div id="levelGrid" class="level-grid">
+            <button class="level-card" data-level="1" type="button">
+              <span class="level-num">1</span>
+              <span class="level-emoji">🍋💡</span>
+              <span class="level-name">Лимонный свет</span>
+            </button>
+
+            <button class="level-card locked" data-level="2" type="button">
+              <span class="level-num">2</span>
+              <span class="level-emoji">💧🫙</span>
+              <span class="level-name">Чистая вода</span>
+            </button>
+
+            <button class="level-card locked" data-level="3" type="button">
+              <span class="level-num">3</span>
+              <span class="level-emoji">🍄💨</span>
+              <span class="level-name">Гриб-ракета</span>
+            </button>
+
+            <button class="level-card locked" data-level="4" type="button">
+              <span class="level-num">4</span>
+              <span class="level-emoji">✨🪶</span>
+              <span class="level-name">Живое золото</span>
+            </button>
+
+            <button class="level-card locked" data-level="5" type="button">
+              <span class="level-num">5</span>
+              <span class="level-emoji">🌋🫧</span>
+              <span class="level-name">Вулкан жизни</span>
+            </button>
           </div>
         </div>
       </section>
 
       <!-- ИГРА -->
       <section id="gameScreen" class="screen">
+        <div class="game-topbar">
+          <button id="backHomeBtn" class="ghost-btn" type="button">← К карте</button>
+
+          <div class="status-row">
+            <span id="currentLevelBadge" class="mini-badge">Уровень 1</span>
+            <span id="errorsBadge" class="errors-badge">Ошибки: 0</span>
+          </div>
+        </div>
+
         <div class="card game-card">
-          <div class="game-head">
+          <div class="game-header">
             <div>
-              <div class="mini-label">Собери опыт</div>
-              <h2>Лимонный свет</h2>
+              <h2 id="levelTitle">Лимонный свет</h2>
+              <p id="levelHint" class="level-hint">Перетащи детали на свои места</p>
             </div>
 
-            <div class="counter-box">
-              Ошибки: <span id="attemptsCount">0</span>
-            </div>
+            <button id="resetLevelBtn" class="secondary-btn" type="button">Заново</button>
           </div>
 
-          <div class="message-wrap">
-            <div id="gameMessage" class="message-box hidden"></div>
-          </div>
+          <div id="gameMessage" class="message-box hidden"></div>
 
           <div class="game-layout">
-            <!-- СЦЕНА -->
             <div id="playground" class="playground">
               <svg id="wireLayer" class="wire-layer"></svg>
-
-              <div class="table-shadow"></div>
-
-              <!-- лимон -->
-              <div class="lemon-scene">
-                <div class="lemon-body">
-                  <div class="lemon-shine"></div>
-                  <div class="lemon-dot dot-a"></div>
-                  <div class="lemon-dot dot-b"></div>
-                  <div class="lemon-dot dot-c"></div>
-                </div>
-
-                <div id="target-zinc" class="drop-slot plate-slot zinc-slot" data-accept="zinc">
-                  Zn
-                </div>
-                <div id="target-copper" class="drop-slot plate-slot copper-slot" data-accept="copper">
-                  Cu
-                </div>
-              </div>
-
-              <!-- лампа -->
-              <div class="lamp-scene">
-                <div id="gameGlow" class="lamp-light"></div>
-                <div id="gameLamp" class="lamp-bulb">💡</div>
-                <div class="lamp-base"></div>
-
-                <div id="lamp-red" class="drop-slot wire-slot lamp-red-slot" data-accept="wire-red">
-                  +
-                </div>
-                <div id="lamp-black" class="drop-slot wire-slot lamp-black-slot" data-accept="wire-black">
-                  −
-                </div>
-              </div>
             </div>
 
-            <!-- ПАНЕЛЬ ДЕТАЛЕЙ -->
-            <div class="parts-panel">
+            <aside class="parts-panel">
               <h3>Детали</h3>
-              <p class="parts-text">
-                Перетащи детали на правильные места
-              </p>
+              <p class="parts-text">Сделай всё по порядку</p>
 
-              <div class="parts-list">
-                <div class="part-card">
-                  <div id="part-zinc" class="draggable part plate zinc" data-part="zinc">
-                    Zn
-                  </div>
-                  <div class="part-label">Цинк</div>
-                </div>
-
-                <div class="part-card">
-                  <div id="part-copper" class="draggable part plate copper" data-part="copper">
-                    Cu
-                  </div>
-                  <div class="part-label">Медь</div>
-                </div>
-
-                <div class="part-card">
-                  <div id="part-wire-red" class="draggable part wire wire-red" data-part="wire-red">
-                    <span class="wire-dot red"></span>
-                    <span class="wire-name">Красный</span>
-                  </div>
-                  <div class="part-label">Провод</div>
-                </div>
-
-                <div class="part-card">
-                  <div id="part-wire-black" class="draggable part wire wire-black" data-part="wire-black">
-                    <span class="wire-dot black"></span>
-                    <span class="wire-name">Чёрный</span>
-                  </div>
-                  <div class="part-label">Провод</div>
-                </div>
-              </div>
+              <div id="partsContainer" class="parts-container"></div>
 
               <div class="progress-box">
                 <div class="progress-title">Готово</div>
-                <div class="progress-dots">
-                  <div id="dot-zinc" class="progress-dot"></div>
-                  <div id="dot-copper" class="progress-dot"></div>
-                  <div id="dot-wire-red" class="progress-dot"></div>
-                  <div id="dot-wire-black" class="progress-dot"></div>
-                </div>
+                <div id="progressDots" class="progress-dots"></div>
               </div>
-
-              <button id="resetGameBtn" class="secondary-btn" type="button">
-                Начать заново
-              </button>
-            </div>
+            </aside>
           </div>
         </div>
       </section>
 
-      <!-- УСПЕХ -->
-      <section id="successScreen" class="screen">
-        <div class="card success-card">
-          <div class="success-badge">Ура!</div>
-          <h2>Свет вернулся!</h2>
-          <p class="success-text">
-            Ты собрал лимонную батарейку и помог миру снова засветиться.
+      <!-- ФИНАЛ -->
+      <section id="finalScreen" class="screen">
+        <div class="card final-card">
+          <div class="mini-badge">Финал</div>
+          <h2>Мир ожил!</h2>
+          <p class="final-text">
+            Ты прошёл все 5 уровней и помог вернуть свет, воду и жизнь.
           </p>
 
-          <div class="success-lamp-wrap">
-            <div class="success-glow"></div>
-            <div class="success-lamp">💡</div>
+          <div class="final-icons">💡 💧 🍄 ✨ 🌋</div>
+
+          <div class="promo-box">
+            <div class="promo-title">Дальше — промокод в АгроУМ</div>
+            <div class="promo-code">AGROUM-MIR</div>
+            <p class="promo-text">Покажи этот экран в АгроУМ и получи бонус.</p>
           </div>
 
-          <div class="success-grid">
-            <div class="info-card">
-              <h3>Что получилось</h3>
-              <p>
-                В лимон вставили две пластинки, подключили провода
-                и зажгли лампочку.
-              </p>
-            </div>
-
-            <div class="info-card">
-              <h3>Факт</h3>
-              <p>
-                Лимон помогает получить маленький ток —
-                почти как настоящая батарейка.
-              </p>
-            </div>
-          </div>
-
-          <div class="reward-card">
-            <h3>Твои награды</h3>
-            <ul id="rewardsList" class="rewards-list">
-              <li>Пока наград нет</li>
-            </ul>
-          </div>
-
-          <div class="code-card">
-            <h3>Секретный код</h3>
-            <p class="code-text">
-              Введи код с занятия и получи бонус
-            </p>
-
-            <div class="code-row">
-              <input
-                id="promoCodeInput"
-                type="text"
-                placeholder="Код"
-                maxlength="20"
-              />
-              <button id="applyCodeBtn" class="primary-btn" type="button">
-                OK
-              </button>
-            </div>
-
-            <div id="codeMessage" class="message-box hidden"></div>
-          </div>
-
-          <div class="success-actions">
-            <button id="playAgainBtn" class="secondary-btn big-btn" type="button">
-              Играть ещё
-            </button>
+          <div class="final-actions">
+            <button id="backToMapBtn" class="primary-btn big-btn" type="button">К уровням</button>
           </div>
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- МОДАЛКА -->
+  <div id="successModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="mini-badge">Уровень пройден</div>
+      <h3 id="successTitle">Отлично!</h3>
+      <p id="successText" class="modal-text">Ты справился.</p>
+      <div class="modal-actions">
+        <button id="nextLevelBtn" class="primary-btn" type="button">Дальше</button>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>
