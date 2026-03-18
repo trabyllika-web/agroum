@@ -1,20 +1,30 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>АгроУМ Игра</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>АгроУМ — Мини-игра</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+  <div class="page-bg"></div>
 
-<div id="app">
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">АгроУМ</div>
+        <div class="brand-text">
+          <div class="brand-title">Мини-игра</div>
+          <div class="brand-subtitle">Трогаем. Нюхаем. Исследуем. Думаем.</div>
+        </div>
+      </div>
 
-  <div id="screen"></div>
+      <button id="resetAllBtn" class="ghost-btn" type="button">Сбросить всё</button>
+    </header>
 
-</div>
+    <main id="appScreen" class="main-wrap"></main>
+  </div>
 
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
