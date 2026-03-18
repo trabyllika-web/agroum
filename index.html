@@ -1,171 +1,20 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>АгроУМ — Возрождение мира</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>АгроУМ Игра</title>
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <div class="page-bg"></div>
 
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-pill">АгроУМ</div>
-        <div>
-          <div class="brand-title">Возрождение мира</div>
-          <div class="brand-subtitle">Трогаем. Нюхаем. Исследуем. Думаем.</div>
-        </div>
-      </div>
+<div id="app">
 
-      <button id="resetAllBtn" class="ghost-btn" type="button">Сбросить всё</button>
-    </header>
+  <div id="screen"></div>
 
-    <main class="main-wrap">
-      <!-- ГЛАВНЫЙ ЭКРАН -->
-      <section id="homeScreen" class="screen active">
-        <div class="card hero-card">
-          <div class="hero-left">
-            <div class="mini-badge">5 уровней</div>
-            <h1>Спаси мир вместе с АгроУМ</h1>
-            <p class="hero-text">
-              Мир уснул. Свет погас. Вода стала мутной. Но юные учёные могут всё исправить.
-            </p>
-            <button id="startAdventureBtn" class="primary-btn big-btn" type="button">
-              Начать путь
-            </button>
-          </div>
+</div>
 
-          <div class="hero-right">
-            <div class="hero-visual">
-              <div class="blob blue"></div>
-              <div class="blob green"></div>
-              <div class="hero-icons">🧒 👧 🍋 💧 🍄 🌋</div>
-              <div class="hero-caption">Собирай. Перетаскивай. Оживляй.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card map-card">
-          <div class="mini-badge">Карта уровней</div>
-          <h2>Выбери уровень</h2>
-
-          <div id="levelGrid" class="level-grid">
-            <button class="level-card" data-level="1" type="button">
-              <span class="level-num">1</span>
-              <span class="level-emoji">🍋💡</span>
-              <span class="level-name">Лимонный свет</span>
-            </button>
-
-            <button class="level-card locked" data-level="2" type="button">
-              <span class="level-num">2</span>
-              <span class="level-emoji">💧🫙</span>
-              <span class="level-name">Чистая вода</span>
-            </button>
-
-            <button class="level-card locked" data-level="3" type="button">
-              <span class="level-num">3</span>
-              <span class="level-emoji">🍄💨</span>
-              <span class="level-name">Гриб-ракета</span>
-            </button>
-
-            <button class="level-card locked" data-level="4" type="button">
-              <span class="level-num">4</span>
-              <span class="level-emoji">✨🪶</span>
-              <span class="level-name">Живое золото</span>
-            </button>
-
-            <button class="level-card locked" data-level="5" type="button">
-              <span class="level-num">5</span>
-              <span class="level-emoji">🌋🫧</span>
-              <span class="level-name">Вулкан жизни</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ИГРА -->
-      <section id="gameScreen" class="screen">
-        <div class="game-topbar">
-          <button id="backHomeBtn" class="ghost-btn" type="button">← К карте</button>
-
-          <div class="status-row">
-            <span id="currentLevelBadge" class="mini-badge">Уровень 1</span>
-            <span id="errorsBadge" class="errors-badge">Ошибки: 0</span>
-          </div>
-        </div>
-
-        <div class="card game-card">
-          <div class="game-header">
-            <div>
-              <h2 id="levelTitle">Лимонный свет</h2>
-              <p id="levelHint" class="level-hint">Перетащи детали на свои места</p>
-            </div>
-
-            <button id="resetLevelBtn" class="secondary-btn" type="button">Заново</button>
-          </div>
-
-          <div id="gameMessage" class="message-box hidden"></div>
-
-          <div class="game-layout">
-            <div id="playground" class="playground">
-              <svg id="wireLayer" class="wire-layer"></svg>
-            </div>
-
-            <aside class="parts-panel">
-              <h3>Детали</h3>
-              <p class="parts-text">Сделай всё по порядку</p>
-
-              <div id="partsContainer" class="parts-container"></div>
-
-              <div class="progress-box">
-                <div class="progress-title">Готово</div>
-                <div id="progressDots" class="progress-dots"></div>
-              </div>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <!-- ФИНАЛ -->
-      <section id="finalScreen" class="screen">
-        <div class="card final-card">
-          <div class="mini-badge">Финал</div>
-          <h2>Мир ожил!</h2>
-          <p class="final-text">
-            Ты прошёл все 5 уровней и помог вернуть свет, воду и жизнь.
-          </p>
-
-          <div class="final-icons">💡 💧 🍄 ✨ 🌋</div>
-
-          <div class="promo-box">
-            <div class="promo-title">Дальше — промокод в АгроУМ</div>
-            <div class="promo-code">AGROUM-MIR</div>
-            <p class="promo-text">Покажи этот экран в АгроУМ и получи бонус.</p>
-          </div>
-
-          <div class="final-actions">
-            <button id="backToMapBtn" class="primary-btn big-btn" type="button">К уровням</button>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- МОДАЛКА -->
-  <div id="successModal" class="modal hidden">
-    <div class="modal-backdrop"></div>
-    <div class="modal-card">
-      <div class="mini-badge">Уровень пройден</div>
-      <h3 id="successTitle">Отлично!</h3>
-      <p id="successText" class="modal-text">Ты справился.</p>
-      <div class="modal-actions">
-        <button id="nextLevelBtn" class="primary-btn" type="button">Дальше</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
