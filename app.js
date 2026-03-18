@@ -7,6 +7,7 @@ const SCREENS = {
 const startGameBtn = document.getElementById("startGameBtn");
 const playAgainBtn = document.getElementById("playAgainBtn");
 const resetProgressBtn = document.getElementById("resetProgressBtn");
+const resetGameBtn = document.getElementById("resetGameBtn");
 const applyCodeBtn = document.getElementById("applyCodeBtn");
 
 const attemptsCount = document.getElementById("attemptsCount");
@@ -15,22 +16,30 @@ const codeMessage = document.getElementById("codeMessage");
 const promoCodeInput = document.getElementById("promoCodeInput");
 const rewardsList = document.getElementById("rewardsList");
 
-const heroLamp = document.getElementById("heroLamp");
-const gameLamp = document.getElementById("gameLamp");
+const welcomeLamp = document.getElementById("welcomeLamp");
 const welcomeGlow = document.getElementById("welcomeGlow");
+const gameLamp = document.getElementById("gameLamp");
 const gameGlow = document.getElementById("gameGlow");
 
-const dots = [
-  document.getElementById("dot1"),
-  document.getElementById("dot2"),
-  document.getElementById("dot3"),
-];
+const wireLayer = document.getElementById("wireLayer");
+const playground = document.getElementById("playground");
 
-const stepButtons = document.querySelectorAll(".step-btn");
+const dotZinc = document.getElementById("dot-zinc");
+const dotCopper = document.getElementById("dot-copper");
+const dotWireRed = document.getElementById("dot-wire-red");
+const dotWireBlack = document.getElementById("dot-wire-black");
 
-const STORAGE_KEY = "agroum_light_level_icons_v2";
+const partZinc = document.getElementById("part-zinc");
+const partCopper = document.getElementById("part-copper");
+const partWireRed = document.getElementById("part-wire-red");
+const partWireBlack = document.getElementById("part-wire-black");
 
-const CORRECT_ORDER = ["plates", "wires", "led"];
+const targetZinc = document.getElementById("target-zinc");
+const targetCopper = document.getElementById("target-copper");
+const lampRed = document.getElementById("lamp-red");
+const lampBlack = document.getElementById("lamp-black");
+
+const STORAGE_KEY = "agroum_drag_light_v3";
 
 const PROMO_CODES = {
   LIGHT: {
@@ -41,19 +50,41 @@ const PROMO_CODES = {
     title: "Знак учёного",
     text: "Ты получил награду: Знак учёного",
   },
-  SUN: {
-    title: "Солнечный бонус",
-    text: "Ты получил награду: Солнечный бонус",
+  LEMON: {
+    title: "Лимонная энергия",
+    text: "Ты получил награду: Лимонная энергия",
   },
 };
 
+const REQUIRED = {
+  zinc: false,
+  copper: false,
+  "wire-red": false,
+  "wire-black": false,
+};
+
 let state = {
-  currentStep: 0,
   attempts: 0,
   completed: false,
   rewards: [],
   usedCodes: [],
 };
+
+let dragState = null;
+
+const draggables = [
+  { el: partZinc, part: "zinc" },
+  { el: partCopper, part: "copper" },
+  { el: partWireRed, part: "wire-red" },
+  { el: partWireBlack, part: "wire-black" },
+];
+
+const targets = [
+  { el: targetZinc, accept: "zinc" },
+  { el: targetCopper, accept: "copper" },
+  { el: lampRed, accept: "wire-red" },
+  { el: lampBlack, accept: "wire-black" },
+];
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -66,7 +97,6 @@ function loadState() {
   try {
     const parsed = JSON.parse(raw);
     state = {
-      currentStep: 0,
       attempts: parsed.attempts || 0,
       completed: Boolean(parsed.completed),
       rewards: Array.isArray(parsed.rewards) ? parsed.rewards : [],
@@ -94,36 +124,22 @@ function hideMessage(element) {
   element.textContent = "";
 }
 
-function updateAttempts() {
-  attemptsCount.textContent = state.attempts;
-}
-
-function updateDots() {
-  dots.forEach((dot, index) => {
-    dot.classList.toggle("done", index < state.currentStep);
-  });
-}
-
-function updateButtons() {
-  stepButtons.forEach((button) => {
-    const buttonStep = button.dataset.step;
-    const stepIndex = CORRECT_ORDER.indexOf(buttonStep);
-    button.classList.toggle("done", stepIndex < state.currentStep);
-  });
-}
-
 function setLampOn() {
+  welcomeLamp.classList.add("on");
+  welcomeGlow.classList.add("on");
   gameLamp.classList.add("on");
   gameGlow.classList.add("on");
-  heroLamp.classList.add("on");
-  welcomeGlow.classList.add("on");
 }
 
 function setLampOff() {
+  welcomeLamp.classList.remove("on");
+  welcomeGlow.classList.remove("on");
   gameLamp.classList.remove("on");
   gameGlow.classList.remove("on");
-  heroLamp.classList.remove("on");
-  welcomeGlow.classList.remove("on");
+}
+
+function updateAttempts() {
+  attemptsCount.textContent = state.attempts;
 }
 
 function renderRewards() {
@@ -141,19 +157,210 @@ function renderRewards() {
   });
 }
 
-function resetGameOnly() {
-  state.currentStep = 0;
+function resetRequired() {
+  Object.keys(REQUIRED).forEach((key) => {
+    REQUIRED[key] = false;
+  });
+}
+
+function updateProgressDots() {
+  dotZinc.classList.toggle("done", REQUIRED.zinc);
+  dotCopper.classList.toggle("done", REQUIRED.copper);
+  dotWireRed.classList.toggle("done", REQUIRED["wire-red"]);
+  dotWireBlack.classList.toggle("done", REQUIRED["wire-black"]);
+}
+
+function clearWireLayer() {
+  wireLayer.innerHTML = "";
+}
+
+function playgroundRect() {
+  return playground.getBoundingClientRect();
+}
+
+function centerOf(el) {
+  const pRect = playgroundRect();
+  const rect = el.getBoundingClientRect();
+
+  return {
+    x: rect.left - pRect.left + rect.width / 2,
+    y: rect.top - pRect.top + rect.height / 2,
+  };
+}
+
+function drawWire(fromEl, toEl, color) {
+  const from = centerOf(fromEl);
+  const to = centerOf(toEl);
+
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+  const c1x = from.x + 80;
+  const c1y = from.y - 10;
+  const c2x = to.x - 80;
+  const c2y = to.y + 10;
+
+  const d = `M ${from.x} ${from.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${to.x} ${to.y}`;
+
+  path.setAttribute("d", d);
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", color);
+  path.setAttribute("stroke-width", "8");
+  path.setAttribute("stroke-linecap", "round");
+  path.setAttribute("filter", "drop-shadow(0 4px 8px rgba(0,0,0,0.12))");
+
+  wireLayer.appendChild(path);
+}
+
+function renderWiresIfNeeded() {
+  clearWireLayer();
+
+  if (REQUIRED["wire-red"]) {
+    drawWire(targetCopper, lampRed, "#ef5b5b");
+  }
+
+  if (REQUIRED["wire-black"]) {
+    drawWire(targetZinc, lampBlack, "#404040");
+  }
+}
+
+function markTargetFilled(targetEl, filled) {
+  targetEl.classList.toggle("filled", filled);
+}
+
+function isEverythingDone() {
+  return Object.values(REQUIRED).every(Boolean);
+}
+
+function handleWin() {
+  state.completed = true;
+  saveState();
+  setLampOn();
+  showMessage(gameMessage, "success", "Ура! Лампочка загорелась!");
+
+  setTimeout(() => {
+    hideMessage(gameMessage);
+    renderRewards();
+    showScreen("success");
+  }, 1200);
+}
+
+function tryWin() {
+  updateProgressDots();
+  renderWiresIfNeeded();
+
+  if (REQUIRED.zinc && REQUIRED.copper && REQUIRED["wire-red"] && REQUIRED["wire-black"]) {
+    handleWin();
+  }
+}
+
+function getAcceptingTarget(part, x, y) {
+  for (const target of targets) {
+    const rect = target.el.getBoundingClientRect();
+    const inside =
+      x >= rect.left &&
+      x <= rect.right &&
+      y >= rect.top &&
+      y <= rect.bottom;
+
+    if (inside && target.accept === part) {
+      return target;
+    }
+  }
+
+  return null;
+}
+
+function returnToOrigin(el) {
+  el.style.left = "";
+  el.style.top = "";
+  el.style.position = "relative";
+  el.style.zIndex = "";
+  el.classList.remove("dragging");
+}
+
+function placeOnTarget(el, targetEl) {
+  const pRect = playgroundRect();
+  const tRect = targetEl.getBoundingClientRect();
+  const eRect = el.getBoundingClientRect();
+
+  const left = tRect.left - pRect.left + (tRect.width - eRect.width) / 2;
+  const top = tRect.top - pRect.top + (tRect.height - eRect.height) / 2;
+
+  el.style.position = "absolute";
+  el.style.left = `${left}px`;
+  el.style.top = `${top}px`;
+  el.style.zIndex = "10";
+  el.classList.remove("dragging");
+  el.classList.add("placed");
+  el.style.cursor = "default";
+}
+
+function wrongDrop() {
+  state.attempts += 1;
+  updateAttempts();
+  saveState();
+  showMessage(gameMessage, "error", "Попробуй в другое место");
+}
+
+function correctDrop(part, el, target) {
+  placeOnTarget(el, target.el);
+  markTargetFilled(target.el, true);
+
+  REQUIRED[part] = true;
   hideMessage(gameMessage);
-  updateDots();
-  updateButtons();
+
+  if (part === "wire-red" && (!REQUIRED.copper || !REQUIRED.zinc)) {
+    showMessage(gameMessage, "error", "Сначала вставь пластинки в лимон");
+    return;
+  }
+
+  if (part === "wire-black" && (!REQUIRED.copper || !REQUIRED.zinc)) {
+    showMessage(gameMessage, "error", "Сначала вставь пластинки в лимон");
+    return;
+  }
+
+  tryWin();
+}
+
+function canPlacePart(part) {
+  if (part === "wire-red" || part === "wire-black") {
+    return REQUIRED.zinc && REQUIRED.copper;
+  }
+  return true;
+}
+
+function resetPartToTray(el) {
+  el.classList.remove("placed");
+  el.style.position = "relative";
+  el.style.left = "";
+  el.style.top = "";
+  el.style.zIndex = "";
+  el.style.cursor = "grab";
+}
+
+function resetBoard() {
+  state.completed = false;
+  resetRequired();
   setLampOff();
+  hideMessage(gameMessage);
+
+  markTargetFilled(targetZinc, false);
+  markTargetFilled(targetCopper, false);
+  markTargetFilled(lampRed, false);
+  markTargetFilled(lampBlack, false);
+
+  draggables.forEach(({ el }) => {
+    resetPartToTray(el);
+  });
+
+  clearWireLayer();
+  updateProgressDots();
 }
 
 function fullReset() {
   localStorage.removeItem(STORAGE_KEY);
 
   state = {
-    currentStep: 0,
     attempts: 0,
     completed: false,
     rewards: [],
@@ -161,59 +368,12 @@ function fullReset() {
   };
 
   updateAttempts();
-  updateDots();
-  updateButtons();
   renderRewards();
-  setLampOff();
   hideMessage(gameMessage);
   hideMessage(codeMessage);
   promoCodeInput.value = "";
+  resetBoard();
   showScreen("welcome");
-}
-
-function handleWrongStep() {
-  state.attempts += 1;
-  updateAttempts();
-  saveState();
-
-  showMessage(gameMessage, "error", "Ой! Давай ещё раз");
-  setLampOff();
-
-  setTimeout(() => {
-    resetGameOnly();
-  }, 900);
-}
-
-function handleCorrectStep(button) {
-  button.classList.add("done");
-  state.currentStep += 1;
-  updateDots();
-  updateButtons();
-
-  if (state.currentStep === CORRECT_ORDER.length) {
-    state.completed = true;
-    setLampOn();
-    saveState();
-
-    showMessage(gameMessage, "success", "Ура! Лампочка горит!");
-
-    setTimeout(() => {
-      renderRewards();
-      hideMessage(gameMessage);
-      showScreen("success");
-    }, 1100);
-  }
-}
-
-function onStepClick(event) {
-  const clickedStep = event.currentTarget.dataset.step;
-  const expectedStep = CORRECT_ORDER[state.currentStep];
-
-  if (clickedStep === expectedStep) {
-    handleCorrectStep(event.currentTarget);
-  } else {
-    handleWrongStep();
-  }
 }
 
 function applyCode() {
@@ -247,36 +407,110 @@ function applyCode() {
   promoCodeInput.value = "";
 }
 
+function makeDraggable(el, part) {
+  el.addEventListener("pointerdown", (event) => {
+    if (el.classList.contains("placed")) return;
+
+    if (!canPlacePart(part)) {
+      showMessage(gameMessage, "error", "Сначала вставь две пластинки в лимон");
+      return;
+    }
+
+    hideMessage(gameMessage);
+
+    const pRect = playgroundRect();
+    const rect = el.getBoundingClientRect();
+
+    dragState = {
+      el,
+      part,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+    };
+
+    el.classList.add("dragging");
+    el.style.position = "absolute";
+    el.style.left = `${rect.left - pRect.left}px`;
+    el.style.top = `${rect.top - pRect.top}px`;
+    el.style.zIndex = "20";
+
+    el.setPointerCapture(event.pointerId);
+  });
+
+  el.addEventListener("pointermove", (event) => {
+    if (!dragState || dragState.el !== el) return;
+
+    const pRect = playgroundRect();
+
+    const left = event.clientX - pRect.left - dragState.offsetX;
+    const top = event.clientY - pRect.top - dragState.offsetY;
+
+    el.style.left = `${left}px`;
+    el.style.top = `${top}px`;
+  });
+
+  el.addEventListener("pointerup", (event) => {
+    if (!dragState || dragState.el !== el) return;
+
+    const target = getAcceptingTarget(part, event.clientX, event.clientY);
+
+    if (!target) {
+      wrongDrop();
+      returnToOrigin(el);
+      dragState = null;
+      return;
+    }
+
+    correctDrop(part, el, target);
+    dragState = null;
+  });
+
+  el.addEventListener("pointercancel", () => {
+    if (!dragState || dragState.el !== el) return;
+    returnToOrigin(el);
+    dragState = null;
+  });
+}
+
+function initDrag() {
+  draggables.forEach(({ el, part }) => {
+    makeDraggable(el, part);
+  });
+}
+
 function init() {
   loadState();
   updateAttempts();
-  updateDots();
-  updateButtons();
   renderRewards();
+  resetBoard();
+  initDrag();
 
   if (state.completed) {
     setLampOn();
     showScreen("success");
   } else {
-    setLampOff();
     showScreen("welcome");
   }
 
   startGameBtn.addEventListener("click", () => {
-    resetGameOnly();
+    resetBoard();
     showScreen("game");
   });
 
   playAgainBtn.addEventListener("click", () => {
-    resetGameOnly();
+    resetBoard();
     showScreen("game");
+  });
+
+  resetGameBtn.addEventListener("click", () => {
+    resetBoard();
   });
 
   resetProgressBtn.addEventListener("click", fullReset);
   applyCodeBtn.addEventListener("click", applyCode);
 
-  stepButtons.forEach((button) => {
-    button.addEventListener("click", onStepClick);
+  window.addEventListener("resize", () => {
+    renderWiresIfNeeded();
   });
 }
 
