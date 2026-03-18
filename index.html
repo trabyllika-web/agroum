@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>АгроУМ — Возроди свет</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-badge">АгроУМ</span>
+        <span class="brand-title">Возрождение мира</span>
+      </div>
+      <button id="resetProgressBtn" class="ghost-btn" type="button">
+        Сбросить прогресс
+      </button>
+    </header>
+
+    <main class="screen-wrap">
+      <!-- Экран приветствия -->
+      <section id="welcomeScreen" class="screen active">
+        <div class="card hero">
+          <div class="hero-text">
+            <p class="eyebrow">Уровень 1</p>
+            <h1>Возроди свет</h1>
+            <p class="lead">
+              Мир уснул на тысячи лет. Только юные учёные АгроУМ могут вернуть
+              в него свет и энергию.
+            </p>
+            <p class="story">
+              Сегодня тебе нужно провести первый опыт: собрать лимонную
+              батарейку и зажечь лампочку.
+            </p>
+
+            <div class="hero-actions">
+              <button id="startGameBtn" class="primary-btn" type="button">
+                Начать уровень
+              </button>
+            </div>
+          </div>
+
+          <div class="hero-illustration">
+            <div class="glow-orb"></div>
+            <div class="hero-lamp" id="heroLamp">💡</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Экран игры -->
+      <section id="gameScreen" class="screen">
+        <div class="card">
+          <div class="level-header">
+            <div>
+              <p class="eyebrow">Мини-игра</p>
+              <h2>Собери опыт “Лимонный свет”</h2>
+            </div>
+            <div class="status-pill">
+              Попытка: <span id="attemptsCount">0</span>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <p>
+              Нужно расставить шаги опыта в правильном порядке, чтобы вернуть
+              свет в мир.
+            </p>
+          </div>
+
+          <div class="steps-grid">
+            <button class="step-btn" data-step="plates" type="button">
+              1? Вставить пластины в лимон
+            </button>
+
+            <button class="step-btn" data-step="led" type="button">
+              2? Подключить светодиод
+            </button>
+
+            <button class="step-btn" data-step="wires" type="button">
+              3? Соединить провода
+            </button>
+          </div>
+
+          <div class="progress-panel">
+            <div class="progress-label">
+              Собранная цепочка:
+            </div>
+            <div id="selectedSteps" class="selected-steps">
+              Пока пусто
+            </div>
+          </div>
+
+          <div class="game-actions">
+            <button id="checkOrderBtn" class="primary-btn" type="button">
+              Проверить
+            </button>
+            <button id="clearOrderBtn" class="secondary-btn" type="button">
+              Очистить
+            </button>
+          </div>
+
+          <div id="gameMessage" class="message-box hidden"></div>
+        </div>
+      </section>
+
+      <!-- Экран успеха -->
+      <section id="successScreen" class="screen">
+        <div class="card success-card">
+          <p class="eyebrow">Уровень пройден</p>
+          <h2>Ты вернул свет в мир!</h2>
+
+          <div class="success-lamp-wrap">
+            <div class="success-lamp on">💡</div>
+          </div>
+
+          <p class="lead center">
+            Лимонная батарейка заработала, и энергия снова появилась в мире.
+          </p>
+
+          <div class="fact-box">
+            <strong>Факт:</strong>
+            Лимонная кислота помогает двигаться электронам — так получается ток,
+            почти как в настоящей батарейке.
+          </div>
+
+          <div class="code-card">
+            <h3>Введи код с занятия</h3>
+            <p class="small-text">
+              Если педагог дал тебе секретный код, введи его и получи награду.
+            </p>
+
+            <div class="code-row">
+              <input
+                id="promoCodeInput"
+                type="text"
+                placeholder="Например: LIGHT"
+                maxlength="20"
+              />
+              <button id="applyCodeBtn" class="primary-btn" type="button">
+                Ввести код
+              </button>
+            </div>
+
+            <div id="codeMessage" class="message-box hidden"></div>
+          </div>
+
+          <div class="reward-box">
+            <h3>Твои награды</h3>
+            <ul id="rewardsList" class="rewards-list">
+              <li>Пока наград нет</li>
+            </ul>
+          </div>
+
+          <div class="hero-actions">
+            <button id="playAgainBtn" class="secondary-btn" type="button">
+              Пройти ещё раз
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
