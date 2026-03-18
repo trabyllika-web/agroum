@@ -1,3 +1,15 @@
+.step-btn {
+  font-size: 48px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-btn.done {
+  background: #ffe9b0;
+  transform: scale(1.1);
+}
 const SCREENS = {
   welcome: document.getElementById("welcomeScreen"),
   game: document.getElementById("gameScreen"),
