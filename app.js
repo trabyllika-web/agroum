@@ -39,7 +39,7 @@ const targetCopper = document.getElementById("target-copper");
 const lampRed = document.getElementById("lamp-red");
 const lampBlack = document.getElementById("lamp-black");
 
-const STORAGE_KEY = "agroum_drag_light_v3";
+const STORAGE_KEY = "agroum_drag_light_v4";
 
 const PROMO_CODES = {
   LIGHT: {
@@ -248,7 +248,7 @@ function tryWin() {
   updateProgressDots();
   renderWiresIfNeeded();
 
-  if (REQUIRED.zinc && REQUIRED.copper && REQUIRED["wire-red"] && REQUIRED["wire-black"]) {
+  if (isEverythingDone()) {
     handleWin();
   }
 }
@@ -271,10 +271,19 @@ function getAcceptingTarget(part, x, y) {
 }
 
 function returnToOrigin(el) {
+  const originParent = el.dataset.originParentId
+    ? document.getElementById(el.dataset.originParentId)
+    : null;
+
+  if (originParent) {
+    originParent.appendChild(el);
+  }
+
+  el.style.position = "relative";
   el.style.left = "";
   el.style.top = "";
-  el.style.position = "relative";
   el.style.zIndex = "";
+  el.style.width = "";
   el.classList.remove("dragging");
 }
 
@@ -282,6 +291,10 @@ function placeOnTarget(el, targetEl) {
   const pRect = playgroundRect();
   const tRect = targetEl.getBoundingClientRect();
   const eRect = el.getBoundingClientRect();
+
+  if (el.parentElement !== playground) {
+    playground.appendChild(el);
+  }
 
   const left = tRect.left - pRect.left + (tRect.width - eRect.width) / 2;
   const top = tRect.top - pRect.top + (tRect.height - eRect.height) / 2;
@@ -309,16 +322,6 @@ function correctDrop(part, el, target) {
   REQUIRED[part] = true;
   hideMessage(gameMessage);
 
-  if (part === "wire-red" && (!REQUIRED.copper || !REQUIRED.zinc)) {
-    showMessage(gameMessage, "error", "Сначала вставь пластинки в лимон");
-    return;
-  }
-
-  if (part === "wire-black" && (!REQUIRED.copper || !REQUIRED.zinc)) {
-    showMessage(gameMessage, "error", "Сначала вставь пластинки в лимон");
-    return;
-  }
-
   tryWin();
 }
 
@@ -330,11 +333,21 @@ function canPlacePart(part) {
 }
 
 function resetPartToTray(el) {
+  const originParent = el.dataset.originParentId
+    ? document.getElementById(el.dataset.originParentId)
+    : null;
+
+  if (originParent) {
+    originParent.appendChild(el);
+  }
+
   el.classList.remove("placed");
+  el.classList.remove("dragging");
   el.style.position = "relative";
   el.style.left = "";
   el.style.top = "";
   el.style.zIndex = "";
+  el.style.width = "";
   el.style.cursor = "grab";
 }
 
@@ -408,6 +421,11 @@ function applyCode() {
 }
 
 function makeDraggable(el, part) {
+  const originParent = el.parentElement;
+  if (originParent.id) {
+    el.dataset.originParentId = originParent.id;
+  }
+
   el.addEventListener("pointerdown", (event) => {
     if (el.classList.contains("placed")) return;
 
@@ -418,21 +436,34 @@ function makeDraggable(el, part) {
 
     hideMessage(gameMessage);
 
-    const pRect = playgroundRect();
     const rect = el.getBoundingClientRect();
+    const pRect = playgroundRect();
+
+    const width = rect.width;
+    const height = rect.height;
+
+    const offsetX = event.clientX - rect.left;
+    const offsetY = event.clientY - rect.top;
+
+    // Переносим элемент в playground без скачка
+    if (el.parentElement !== playground) {
+      playground.appendChild(el);
+    }
+
+    el.style.position = "absolute";
+    el.style.width = `${width}px`;
+    el.style.left = `${rect.left - pRect.left}px`;
+    el.style.top = `${rect.top - pRect.top}px`;
+    el.style.zIndex = "20";
+    el.classList.add("dragging");
 
     dragState = {
       el,
       part,
-      offsetX: event.clientX - rect.left,
-      offsetY: event.clientY - rect.top,
+      offsetX,
+      offsetY,
+      pointerId: event.pointerId,
     };
-
-    el.classList.add("dragging");
-    el.style.position = "absolute";
-    el.style.left = `${rect.left - pRect.left}px`;
-    el.style.top = `${rect.top - pRect.top}px`;
-    el.style.zIndex = "20";
 
     el.setPointerCapture(event.pointerId);
   });
@@ -473,7 +504,13 @@ function makeDraggable(el, part) {
 }
 
 function initDrag() {
-  draggables.forEach(({ el, part }) => {
+  draggables.forEach(({ el, part }, index) => {
+    const partCard = el.closest(".part-card");
+    if (partCard && !partCard.id) {
+      partCard.id = `part-origin-${index}`;
+      el.dataset.originParentId = partCard.id;
+    }
+
     makeDraggable(el, part);
   });
 }
