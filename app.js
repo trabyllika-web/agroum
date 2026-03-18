@@ -1,9 +1,10 @@
 const appScreen = document.getElementById("appScreen");
 const resetAllBtn = document.getElementById("resetAllBtn");
 
-const STORAGE_KEY = "agroum_3_levels_v1";
+const STORAGE_KEY = "agroum_story_3_levels_v2";
 
 const state = {
+  currentScreen: "intro",
   currentLevel: 0,
   completedLevels: [],
   attempts: {
@@ -23,6 +24,7 @@ function loadState() {
 
   try {
     const parsed = JSON.parse(raw);
+    state.currentScreen = parsed.currentScreen || "intro";
     state.currentLevel = parsed.currentLevel || 0;
     state.completedLevels = Array.isArray(parsed.completedLevels) ? parsed.completedLevels : [];
     state.attempts = parsed.attempts || { 1: 0, 2: 0, 3: 0 };
@@ -32,17 +34,95 @@ function loadState() {
 }
 
 function resetState() {
+  state.currentScreen = "intro";
   state.currentLevel = 0;
   state.completedLevels = [];
   state.attempts = { 1: 0, 2: 0, 3: 0 };
   localStorage.removeItem(STORAGE_KEY);
 }
 
+function showStoryIntro() {
+  state.currentScreen = "intro";
+  saveState();
+
+  appScreen.innerHTML = `
+    <section class="card center-card">
+      <div class="story-box">
+        <div class="brand-badge" style="display:inline-block">АгроУМ</div>
+        <h1 class="big-title">Мир уснул...</h1>
+
+        <div class="story-hero">
+          <span>🌍</span>
+        </div>
+
+        <p class="lead">
+          Мир уснул на тысячи лет.<br>
+          Но ваша лаборатория проснулась!
+        </p>
+
+        <p class="small-note">
+          Сегодня мы вместе вернём<br>
+          <strong>свет</strong>, <strong>воду</strong> и <strong>жизнь</strong>.
+        </p>
+
+        <div class="level-badges">
+          <div class="badge">💡 Свет</div>
+          <div class="badge">💧 Вода</div>
+          <div class="badge">🌋 Жизнь</div>
+        </div>
+
+        <div class="actions">
+          <button id="toRulesBtn" class="primary-btn big-btn" type="button">Дальше</button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  document.getElementById("toRulesBtn").addEventListener("click", showRules);
+}
+
+function showRules() {
+  state.currentScreen = "rules";
+  saveState();
+
+  appScreen.innerHTML = `
+    <section class="card center-card">
+      <div class="story-box">
+        <div class="brand-badge" style="display:inline-block">Правила учёных</div>
+        <h1 class="big-title">Работаем аккуратно</h1>
+
+        <div class="rules-row">
+          <div class="rule-chip">✋ Только по команде</div>
+          <div class="rule-chip">🚫 Не в рот</div>
+          <div class="rule-chip">👀 Трогаем нужное</div>
+          <div class="rule-chip">🤝 Помогаем друг другу</div>
+        </div>
+
+        <p class="lead">
+          Готов?<br>
+          Тогда начинаем возвращать мир к жизни.
+        </p>
+
+        <div class="actions">
+          <button id="startAdventureBtn" class="primary-btn big-btn" type="button">Начать</button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  document.getElementById("startAdventureBtn").addEventListener("click", () => {
+    state.currentLevel = 1;
+    state.currentScreen = "level1";
+    saveState();
+    showLevel1();
+  });
+}
+
 function levelPills(active) {
   const items = [
     { n: 1, title: "Свет" },
     { n: 2, title: "Вода" },
-    { n: 3, title: "Гриб" },
+    { n: 3, title: "Жизнь" },
   ];
 
   return `
@@ -60,49 +140,58 @@ function levelPills(active) {
   `;
 }
 
-function showStart() {
-  appScreen.innerHTML = `
-    <section class="card center-card">
-      <div class="start-box">
-        <div class="brand-badge" style="display:inline-block">АгроУМ</div>
-        <h1 class="big-title">Мини-игра<br>для детей</h1>
-        <p class="lead">
-          Пройди 3 коротких уровня и помоги миру
-          вернуть свет, воду и движение.
-        </p>
-
-        <div class="level-badges">
-          <div class="badge">💡 Свет</div>
-          <div class="badge">💧 Вода</div>
-          <div class="badge">🍄 Гриб</div>
-        </div>
-
-        <p class="small-note">
-          В конце тебя ждёт подсказка:
-          где получить промокод в АгроУМ.
-        </p>
-
-        <div class="actions">
-          <button id="startBtn" class="primary-btn big-btn" type="button">Играть</button>
-        </div>
-      </div>
-    </section>
+function guideBox(icon, text) {
+  return `
+    <div class="guide-box">
+      <div class="guide-icon">${icon}</div>
+      <div class="guide-text">${text}</div>
+    </div>
   `;
-
-  document.getElementById("startBtn").addEventListener("click", () => {
-    state.currentLevel = 1;
-    saveState();
-    showLevel1();
-  });
 }
 
-/* ---------- shared drag helpers ---------- */
 function getRect(el) {
   return el.getBoundingClientRect();
 }
 
 function pointInsideRect(x, y, rect) {
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+function returnToOrigin(el) {
+  const originId = el.dataset.originParentId;
+  const originParent = originId ? document.getElementById(originId) : null;
+
+  if (originParent) {
+    originParent.appendChild(el);
+  }
+
+  el.style.position = "relative";
+  el.style.left = "";
+  el.style.top = "";
+  el.style.zIndex = "";
+  el.style.width = "";
+  el.classList.remove("dragging");
+}
+
+function placeOnTarget(el, playground, targetEl) {
+  const pRect = getRect(playground);
+  const tRect = getRect(targetEl);
+  const eRect = getRect(el);
+
+  if (el.parentElement !== playground) {
+    playground.appendChild(el);
+  }
+
+  const left = tRect.left - pRect.left + (tRect.width - eRect.width) / 2;
+  const top = tRect.top - pRect.top + (tRect.height - eRect.height) / 2;
+
+  el.style.position = "absolute";
+  el.style.left = `${left}px`;
+  el.style.top = `${top}px`;
+  el.style.zIndex = "10";
+  el.classList.remove("dragging");
+  el.classList.add("placed");
+  el.style.cursor = "default";
 }
 
 function makeDraggable({
@@ -185,45 +274,16 @@ function makeDraggable({
   });
 }
 
-function returnToOrigin(el) {
-  const originId = el.dataset.originParentId;
-  const originParent = originId ? document.getElementById(originId) : null;
-
-  if (originParent) {
-    originParent.appendChild(el);
-  }
-
-  el.style.position = "relative";
-  el.style.left = "";
-  el.style.top = "";
-  el.style.zIndex = "";
-  el.style.width = "";
-  el.classList.remove("dragging");
+function clearHighlights(elements) {
+  elements.forEach(el => el && el.classList.remove("highlight-target", "highlight-part"));
 }
 
-function placeOnTarget(el, playground, targetEl) {
-  const pRect = getRect(playground);
-  const tRect = getRect(targetEl);
-  const eRect = getRect(el);
-
-  if (el.parentElement !== playground) {
-    playground.appendChild(el);
-  }
-
-  const left = tRect.left - pRect.left + (tRect.width - eRect.width) / 2;
-  const top = tRect.top - pRect.top + (tRect.height - eRect.height) / 2;
-
-  el.style.position = "absolute";
-  el.style.left = `${left}px`;
-  el.style.top = `${top}px`;
-  el.style.zIndex = "10";
-  el.classList.remove("dragging");
-  el.classList.add("placed");
-  el.style.cursor = "default";
-}
-
-/* ---------- level 1 ---------- */
+/* ---------- LEVEL 1 ---------- */
 function showLevel1() {
+  state.currentScreen = "level1";
+  state.currentLevel = 1;
+  saveState();
+
   appScreen.innerHTML = `
     <section class="card game-card">
       <div class="game-head">
@@ -236,6 +296,8 @@ function showLevel1() {
 
       ${levelPills(1)}
 
+      ${guideBox("👉", "Сначала вставь две пластинки в лимон")}
+
       <div id="message1" class="message-box hidden"></div>
 
       <div class="game-layout">
@@ -246,11 +308,9 @@ function showLevel1() {
           <div class="lemon-scene">
             <div class="lemon-body"></div>
             <div class="lemon-shine"></div>
-            <div class="lemon-mark mark-zinc">Zn</div>
-            <div class="lemon-mark mark-copper">Cu</div>
 
-            <div id="target-zinc" class="drop-slot plate-slot zinc-slot">Zn</div>
-            <div id="target-copper" class="drop-slot plate-slot copper-slot">Cu</div>
+            <div id="target-zinc" class="drop-slot plate-slot zinc-slot highlight-target">Zn</div>
+            <div id="target-copper" class="drop-slot plate-slot copper-slot highlight-target">Cu</div>
           </div>
 
           <div class="lamp-scene">
@@ -265,16 +325,16 @@ function showLevel1() {
 
         <div class="parts-panel">
           <h3>Детали</h3>
-          <p class="parts-text">Перетащи всё на правильные места</p>
+          <p class="parts-text">Перетащи детали на правильные места</p>
 
           <div class="parts-list">
             <div class="part-card">
-              <div id="part-zinc" class="draggable plate zinc">Zn</div>
+              <div id="part-zinc" class="draggable plate zinc highlight-part">Zn</div>
               <div class="part-label">Цинк</div>
             </div>
 
             <div class="part-card">
-              <div id="part-copper" class="draggable plate copper">Cu</div>
+              <div id="part-copper" class="draggable plate copper highlight-part">Cu</div>
               <div class="part-label">Медь</div>
             </div>
 
@@ -306,7 +366,7 @@ function showLevel1() {
           </div>
 
           <div class="actions" style="justify-content:flex-start;margin-top:16px;">
-            <button id="restartLevel1" class="secondary-btn" type="button">Начать заново</button>
+            <button id="restartLevel1" class="secondary-btn" type="button">Заново</button>
           </div>
         </div>
       </div>
@@ -355,6 +415,22 @@ function showLevel1() {
     message.classList.add("hidden");
     message.classList.remove("success", "error");
     message.textContent = "";
+  }
+
+  function setGuideStep(step) {
+    clearHighlights([partZinc, partCopper, partWireRed, partWireBlack, targetZinc, targetCopper, lampRed, lampBlack]);
+
+    if (step === 1) {
+      partZinc.classList.add("highlight-part");
+      partCopper.classList.add("highlight-part");
+      targetZinc.classList.add("highlight-target");
+      targetCopper.classList.add("highlight-target");
+    } else if (step === 2) {
+      partWireRed.classList.add("highlight-part");
+      partWireBlack.classList.add("highlight-part");
+      lampRed.classList.add("highlight-target");
+      lampBlack.classList.add("highlight-target");
+    }
   }
 
   function bumpWrong(text) {
@@ -424,23 +500,29 @@ function showLevel1() {
     updateDots();
     renderWires();
 
+    if (placed.zinc && placed.copper && (!placed["wire-red"] || !placed["wire-black"])) {
+      setGuideStep(2);
+      showMsg("success", "Теперь подсоедини два провода");
+    }
+
     if (Object.values(placed).every(Boolean)) {
       lampLight.classList.add("on");
       lampBulb.classList.add("on");
-      hideMsg();
+      clearHighlights([partZinc, partCopper, partWireRed, partWireBlack, targetZinc, targetCopper, lampRed, lampBlack]);
 
       if (!state.completedLevels.includes(1)) {
         state.completedLevels.push(1);
       }
       saveState();
 
-      showMsg("success", "Ура! Лампочка загорелась!");
+      showMsg("success", "Ура! Свет вернулся!");
 
       setTimeout(() => {
         state.currentLevel = 2;
+        state.currentScreen = "level2";
         saveState();
         showLevel2();
-      }, 1100);
+      }, 1300);
     }
   }
 
@@ -459,6 +541,7 @@ function showLevel1() {
 
     [targetZinc, targetCopper, lampRed, lampBlack].forEach(t => t.classList.remove("filled"));
     updateDots();
+    setGuideStep(1);
   }
 
   makeDraggable({
@@ -467,8 +550,8 @@ function showLevel1() {
     playground,
     getTarget,
     canDrag,
-    onDenied: () => showMsg("error", "Сначала вставь пластинки"),
-    onWrongDrop: (el) => { bumpWrong("Попробуй в другое место"); returnToOrigin(el); },
+    onDenied: () => showMsg("error", "Сейчас нужны пластинки"),
+    onWrongDrop: (el) => { bumpWrong("Положи пластинку в лимон"); returnToOrigin(el); },
     onCorrectDrop: (el, part, target) => {
       hideMsg();
       placeOnTarget(el, playground, target);
@@ -484,8 +567,8 @@ function showLevel1() {
     playground,
     getTarget,
     canDrag,
-    onDenied: () => showMsg("error", "Сначала вставь пластинки"),
-    onWrongDrop: (el) => { bumpWrong("Попробуй в другое место"); returnToOrigin(el); },
+    onDenied: () => showMsg("error", "Сейчас нужны пластинки"),
+    onWrongDrop: (el) => { bumpWrong("Положи пластинку в лимон"); returnToOrigin(el); },
     onCorrectDrop: (el, part, target) => {
       hideMsg();
       placeOnTarget(el, playground, target);
@@ -501,8 +584,8 @@ function showLevel1() {
     playground,
     getTarget,
     canDrag,
-    onDenied: () => showMsg("error", "Сначала вставь две пластинки в лимон"),
-    onWrongDrop: (el) => { bumpWrong("Попробуй в другое место"); returnToOrigin(el); },
+    onDenied: () => showMsg("error", "Сначала вставь две пластинки"),
+    onWrongDrop: (el) => { bumpWrong("Красный провод — к лампочке"); returnToOrigin(el); },
     onCorrectDrop: (el, part, target) => {
       hideMsg();
       placeOnTarget(el, playground, target);
@@ -518,8 +601,8 @@ function showLevel1() {
     playground,
     getTarget,
     canDrag,
-    onDenied: () => showMsg("error", "Сначала вставь две пластинки в лимон"),
-    onWrongDrop: (el) => { bumpWrong("Попробуй в другое место"); returnToOrigin(el); },
+    onDenied: () => showMsg("error", "Сначала вставь две пластинки"),
+    onWrongDrop: (el) => { bumpWrong("Чёрный провод — к лампочке"); returnToOrigin(el); },
     onCorrectDrop: (el, part, target) => {
       hideMsg();
       placeOnTarget(el, playground, target);
@@ -530,21 +613,29 @@ function showLevel1() {
   });
 
   document.getElementById("restartLevel1").addEventListener("click", restart);
+
+  setGuideStep(1);
 }
 
-/* ---------- level 2 ---------- */
+/* ---------- LEVEL 2 ---------- */
 function showLevel2() {
+  state.currentScreen = "level2";
+  state.currentLevel = 2;
+  saveState();
+
   appScreen.innerHTML = `
     <section class="card game-card">
       <div class="game-head">
         <div>
           <div class="brand-badge" style="display:inline-block;padding:8px 14px;font-size:13px;box-shadow:none;">Уровень 2</div>
-          <h2>Чистая вода</h2>
+          <h2>Фильтр чистой воды</h2>
         </div>
         <div class="counter-box">Ошибки: <span id="attemptCount2">${state.attempts[2]}</span></div>
       </div>
 
       ${levelPills(2)}
+
+      ${guideBox("💧", "Собери слои: вата, уголь, песок")}
 
       <div id="message2" class="message-box hidden"></div>
 
@@ -553,34 +644,34 @@ function showLevel2() {
           <div class="filter-scene">
             <div class="filter-neck"></div>
             <div class="filter-bottle">
-              <div id="slot-top" class="filter-slot slot-top">1</div>
+              <div id="slot-top" class="filter-slot slot-top highlight-target">1</div>
               <div id="slot-middle" class="filter-slot slot-middle">2</div>
               <div id="slot-bottom" class="filter-slot slot-bottom">3</div>
               <div id="cleanWater" class="clean-water"></div>
             </div>
           </div>
 
-          <div class="drop-water"></div>
+          <div class="dirty-water"></div>
         </div>
 
         <div class="parts-panel">
           <h3>Слои фильтра</h3>
-          <p class="parts-text">Собери фильтр правильно</p>
+          <p class="parts-text">Перетащи слои в правильном порядке</p>
 
           <div class="parts-list">
             <div class="part-card">
-              <div id="part-cotton" class="draggable layer-card layer-cotton">Вата</div>
-              <div class="part-label">Мягкий слой</div>
+              <div id="part-cotton" class="draggable layer-card layer-cotton highlight-part">Вата</div>
+              <div class="part-label">1 слой</div>
             </div>
 
             <div class="part-card">
               <div id="part-charcoal" class="draggable layer-card layer-charcoal">Уголь</div>
-              <div class="part-label">Тёмный слой</div>
+              <div class="part-label">2 слой</div>
             </div>
 
             <div class="part-card">
               <div id="part-sand" class="draggable layer-card layer-sand">Песок</div>
-              <div class="part-label">Песочный слой</div>
+              <div class="part-label">3 слой</div>
             </div>
           </div>
 
@@ -594,7 +685,7 @@ function showLevel2() {
           </div>
 
           <div class="actions" style="justify-content:flex-start;margin-top:16px;">
-            <button id="restartLevel2" class="secondary-btn" type="button">Начать заново</button>
+            <button id="restartLevel2" class="secondary-btn" type="button">Заново</button>
           </div>
         </div>
       </div>
@@ -638,6 +729,21 @@ function showLevel2() {
     message.textContent = "";
   }
 
+  function setGuideStep(step) {
+    clearHighlights([partCotton, partCharcoal, partSand, slotTop, slotMiddle, slotBottom]);
+
+    if (step === 1) {
+      partCotton.classList.add("highlight-part");
+      slotTop.classList.add("highlight-target");
+    } else if (step === 2) {
+      partCharcoal.classList.add("highlight-part");
+      slotMiddle.classList.add("highlight-target");
+    } else if (step === 3) {
+      partSand.classList.add("highlight-part");
+      slotBottom.classList.add("highlight-target");
+    }
+  }
+
   function bumpWrong(text) {
     state.attempts[2] += 1;
     attemptCount.textContent = state.attempts[2];
@@ -667,8 +773,20 @@ function showLevel2() {
 
   function completeCheck() {
     updateDots();
+
+    if (placed.cotton && !placed.charcoal) {
+      setGuideStep(2);
+      showMsg("success", "Теперь положи уголь");
+    }
+
+    if (placed.cotton && placed.charcoal && !placed.sand) {
+      setGuideStep(3);
+      showMsg("success", "Теперь добавь песок");
+    }
+
     if (Object.values(placed).every(Boolean)) {
       cleanWater.classList.add("on");
+      clearHighlights([partCotton, partCharcoal, partSand, slotTop, slotMiddle, slotBottom]);
 
       if (!state.completedLevels.includes(2)) {
         state.completedLevels.push(2);
@@ -679,9 +797,10 @@ function showLevel2() {
 
       setTimeout(() => {
         state.currentLevel = 3;
+        state.currentScreen = "level3";
         saveState();
         showLevel3();
-      }, 1100);
+      }, 1300);
     }
   }
 
@@ -697,6 +816,7 @@ function showLevel2() {
 
     [slotTop, slotMiddle, slotBottom].forEach(slot => slot.classList.remove("filled"));
     updateDots();
+    setGuideStep(1);
   }
 
   [
@@ -709,8 +829,7 @@ function showLevel2() {
       part,
       playground,
       getTarget,
-      onDenied: () => {},
-      onWrongDrop: (element) => { bumpWrong("Нужен другой слой"); returnToOrigin(element); },
+      onWrongDrop: (element) => { bumpWrong("Положи слой в нужное место"); returnToOrigin(element); },
       onCorrectDrop: (element, p, target) => {
         hideMsg();
         placeOnTarget(element, playground, target);
@@ -722,57 +841,84 @@ function showLevel2() {
   });
 
   document.getElementById("restartLevel2").addEventListener("click", restart);
+
+  setGuideStep(1);
 }
 
-/* ---------- level 3 ---------- */
+/* ---------- LEVEL 3 ---------- */
 function showLevel3() {
+  state.currentScreen = "level3";
+  state.currentLevel = 3;
+  saveState();
+
   appScreen.innerHTML = `
     <section class="card game-card">
       <div class="game-head">
         <div>
           <div class="brand-badge" style="display:inline-block;padding:8px 14px;font-size:13px;box-shadow:none;">Уровень 3</div>
-          <h2>Гриб-реактивный двигатель</h2>
+          <h2>Вулкан жизни</h2>
         </div>
         <div class="counter-box">Ошибки: <span id="attemptCount3">${state.attempts[3]}</span></div>
       </div>
 
       ${levelPills(3)}
 
+      ${guideBox("🌋", "По очереди: мыло, дрожжи, перекись")}
+
       <div id="message3" class="message-box hidden"></div>
 
       <div class="game-layout">
         <div id="playground3" class="playground">
-          <div class="water-scene">
-            <div class="pond"></div>
-            <div class="ring r1"></div>
-            <div class="ring r2"></div>
-            <div class="ring r3"></div>
+          <div class="volcano-scene">
+            <div class="volcano-mountain"></div>
+            <div class="volcano-hole"></div>
 
-            <div id="mushroom" class="mushroom">🍄</div>
-            <div id="soapTarget" class="soap-target">кап</div>
+            <div id="v-slot-1" class="v-slot v-slot-1 highlight-target">🫧</div>
+            <div id="v-slot-2" class="v-slot v-slot-2">🍞</div>
+            <div id="v-slot-3" class="v-slot v-slot-3">💧</div>
+
+            <div id="volcanoFoam" class="volcano-foam">
+              <div class="foam-bubble fb1"></div>
+              <div class="foam-bubble fb2"></div>
+              <div class="foam-bubble fb3"></div>
+              <div class="foam-bubble fb4"></div>
+              <div class="foam-bubble fb5"></div>
+            </div>
           </div>
         </div>
 
         <div class="parts-panel">
-          <h3>Пуск</h3>
-          <p class="parts-text">Перетащи каплю к грибу</p>
+          <h3>Ингредиенты</h3>
+          <p class="parts-text">Добавляй по одному, как показывает подсказка</p>
 
           <div class="parts-list">
             <div class="part-card">
-              <div id="soapDrop" class="draggable soap-drop">мыло</div>
-              <div class="part-label">Капля</div>
+              <div id="part-soap" class="draggable v-item v-soap highlight-part">🫧</div>
+              <div class="part-label">Мыло</div>
+            </div>
+
+            <div class="part-card">
+              <div id="part-yeast" class="draggable v-item v-yeast">🍞</div>
+              <div class="part-label">Дрожжи</div>
+            </div>
+
+            <div class="part-card">
+              <div id="part-peroxide" class="draggable v-item v-peroxide">💧</div>
+              <div class="part-label">Перекись</div>
             </div>
           </div>
 
           <div class="progress-box">
             <div class="progress-title">Готово</div>
             <div class="progress-dots">
-              <div id="dot-move" class="progress-dot"></div>
+              <div id="dot-soap" class="progress-dot"></div>
+              <div id="dot-yeast" class="progress-dot"></div>
+              <div id="dot-peroxide" class="progress-dot"></div>
             </div>
           </div>
 
           <div class="actions" style="justify-content:flex-start;margin-top:16px;">
-            <button id="restartLevel3" class="secondary-btn" type="button">Начать заново</button>
+            <button id="restartLevel3" class="secondary-btn" type="button">Заново</button>
           </div>
         </div>
       </div>
@@ -782,12 +928,27 @@ function showLevel3() {
   const message = document.getElementById("message3");
   const attemptCount = document.getElementById("attemptCount3");
   const playground = document.getElementById("playground3");
-  const mushroom = document.getElementById("mushroom");
-  const soapDrop = document.getElementById("soapDrop");
-  const soapTarget = document.getElementById("soapTarget");
-  const dotMove = document.getElementById("dot-move");
 
-  let done = false;
+  const partSoap = document.getElementById("part-soap");
+  const partYeast = document.getElementById("part-yeast");
+  const partPeroxide = document.getElementById("part-peroxide");
+
+  const slot1 = document.getElementById("v-slot-1");
+  const slot2 = document.getElementById("v-slot-2");
+  const slot3 = document.getElementById("v-slot-3");
+  const foam = document.getElementById("volcanoFoam");
+
+  const dots = {
+    soap: document.getElementById("dot-soap"),
+    yeast: document.getElementById("dot-yeast"),
+    peroxide: document.getElementById("dot-peroxide"),
+  };
+
+  const placed = {
+    soap: false,
+    yeast: false,
+    peroxide: false,
+  };
 
   function showMsg(type, text) {
     message.classList.remove("hidden", "success", "error");
@@ -801,6 +962,21 @@ function showLevel3() {
     message.textContent = "";
   }
 
+  function setGuideStep(step) {
+    clearHighlights([partSoap, partYeast, partPeroxide, slot1, slot2, slot3]);
+
+    if (step === 1) {
+      partSoap.classList.add("highlight-part");
+      slot1.classList.add("highlight-target");
+    } else if (step === 2) {
+      partYeast.classList.add("highlight-part");
+      slot2.classList.add("highlight-target");
+    } else if (step === 3) {
+      partPeroxide.classList.add("highlight-part");
+      slot3.classList.add("highlight-target");
+    }
+  }
+
   function bumpWrong(text) {
     state.attempts[3] += 1;
     attemptCount.textContent = state.attempts[3];
@@ -808,55 +984,114 @@ function showLevel3() {
     showMsg("error", text);
   }
 
+  function updateDots() {
+    Object.keys(dots).forEach(key => {
+      dots[key].classList.toggle("done", placed[key]);
+    });
+  }
+
   function getTarget(part, x, y) {
-    if (part !== "soap") return null;
-    return pointInsideRect(x, y, getRect(soapTarget)) ? soapTarget : null;
+    const arr = [
+      { part: "soap", el: slot1 },
+      { part: "yeast", el: slot2 },
+      { part: "peroxide", el: slot3 },
+    ];
+
+    for (const item of arr) {
+      if (item.part !== part) continue;
+      if (pointInsideRect(x, y, getRect(item.el))) return item.el;
+    }
+    return null;
   }
 
-  function restart() {
-    done = false;
-    hideMsg();
-    dotMove.classList.remove("done");
-    mushroom.classList.remove("move");
-    soapDrop.classList.remove("placed", "dragging");
-    returnToOrigin(soapDrop);
+  function canDrag(part) {
+    if (part === "yeast") return placed.soap;
+    if (part === "peroxide") return placed.soap && placed.yeast;
+    return true;
   }
 
-  makeDraggable({
-    el: soapDrop,
-    part: "soap",
-    playground,
-    getTarget,
-    onWrongDrop: (el) => {
-      bumpWrong("Капни рядом с грибом");
-      returnToOrigin(el);
-    },
-    onCorrectDrop: (el, part, target) => {
-      hideMsg();
-      placeOnTarget(el, playground, target);
-      el.style.opacity = "0.7";
-      mushroom.classList.add("move");
-      dotMove.classList.add("done");
-      done = true;
+  function completeCheck() {
+    updateDots();
+
+    if (placed.soap && !placed.yeast) {
+      setGuideStep(2);
+      showMsg("success", "Теперь добавь дрожжи");
+    }
+
+    if (placed.soap && placed.yeast && !placed.peroxide) {
+      setGuideStep(3);
+      showMsg("success", "Теперь вливай перекись");
+    }
+
+    if (Object.values(placed).every(Boolean)) {
+      foam.classList.add("on");
+      clearHighlights([partSoap, partYeast, partPeroxide, slot1, slot2, slot3]);
 
       if (!state.completedLevels.includes(3)) {
         state.completedLevels.push(3);
       }
       saveState();
 
-      showMsg("success", "Ура! Гриб поплыл!");
+      showMsg("success", "Ура! Жизнь вспыхнула!");
 
       setTimeout(() => {
         showFinal();
-      }, 1200);
+      }, 1400);
     }
+  }
+
+  function restart() {
+    hideMsg();
+    foam.classList.remove("on");
+    Object.keys(placed).forEach(key => placed[key] = false);
+
+    [partSoap, partYeast, partPeroxide].forEach(el => {
+      el.classList.remove("placed", "dragging");
+      returnToOrigin(el);
+    });
+
+    [slot1, slot2, slot3].forEach(slot => slot.classList.remove("filled"));
+    updateDots();
+    setGuideStep(1);
+  }
+
+  [
+    { el: partSoap, part: "soap" },
+    { el: partYeast, part: "yeast" },
+    { el: partPeroxide, part: "peroxide" },
+  ].forEach(({ el, part }) => {
+    makeDraggable({
+      el,
+      part,
+      playground,
+      canDrag,
+      onDenied: (p) => {
+        if (p === "yeast") showMsg("error", "Сначала добавь мыло");
+        if (p === "peroxide") showMsg("error", "Сначала мыло и дрожжи");
+      },
+      getTarget,
+      onWrongDrop: (element) => {
+        bumpWrong("Положи ингредиент в нужное место");
+        returnToOrigin(element);
+      },
+      onCorrectDrop: (element, p, target) => {
+        hideMsg();
+        placeOnTarget(element, playground, target);
+        target.classList.add("filled");
+        placed[p] = true;
+        completeCheck();
+      }
+    });
   });
 
   document.getElementById("restartLevel3").addEventListener("click", restart);
+
+  setGuideStep(1);
 }
 
-/* ---------- final ---------- */
+/* ---------- FINAL ---------- */
 function showFinal() {
+  state.currentScreen = "final";
   state.currentLevel = 4;
   saveState();
 
@@ -864,17 +1099,17 @@ function showFinal() {
     <section class="card center-card">
       <div class="final-box">
         <div class="brand-badge" style="display:inline-block">АгроУМ</div>
-        <h1 class="big-title">Ты прошёл 3 уровня!</h1>
+        <h1 class="big-title">Ты помог миру ожить!</h1>
 
         <div class="final-glow"></div>
 
         <p class="lead">
-          Ты помог вернуть свет, очистить воду и запустить гриб по воде.
+          Ты вернул свет, очистил воду и запустил жизнь.
         </p>
 
-        <p class="small-note" style="margin-top:16px;">
-          Дальше — <strong>промокод в АгроУМ</strong><br>
-          Приходи в лабораторию и получи его на занятии или мастер-классе.
+        <p class="final-story">
+          Дальше — получи промокод в лаборатории,<br>
+          чтобы помочь цивилизации возродиться дальше.
         </p>
 
         <div class="final-code">ПРОМОКОД ЖДЁТ В АГРОУМ</div>
@@ -888,29 +1123,31 @@ function showFinal() {
 
   document.getElementById("playAgainBtn").addEventListener("click", () => {
     resetState();
-    showStart();
+    showStoryIntro();
   });
 }
 
-/* ---------- app init ---------- */
+/* ---------- INIT ---------- */
 resetAllBtn.addEventListener("click", () => {
   resetState();
-  showStart();
+  showStoryIntro();
 });
 
 function init() {
   loadState();
 
-  if (state.currentLevel === 1) {
+  if (state.currentScreen === "rules") {
+    showRules();
+  } else if (state.currentScreen === "level1") {
     showLevel1();
-  } else if (state.currentLevel === 2) {
+  } else if (state.currentScreen === "level2") {
     showLevel2();
-  } else if (state.currentLevel === 3) {
+  } else if (state.currentScreen === "level3") {
     showLevel3();
-  } else if (state.currentLevel >= 4) {
+  } else if (state.currentScreen === "final") {
     showFinal();
   } else {
-    showStart();
+    showStoryIntro();
   }
 }
 
