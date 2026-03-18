@@ -7,119 +7,212 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app">
-    <div class="stars"></div>
+  <div class="page-bg"></div>
 
+  <div class="app">
     <header class="topbar">
-      <div class="logo-wrap">
-        <div class="logo-badge">АгроУМ</div>
-        <div class="logo-text">
-          <div class="logo-title">Возрождение мира</div>
-          <div class="logo-subtitle">Уровень 1 — Свет</div>
+      <div class="brand">
+        <div class="brand-badge">АгроУМ</div>
+        <div class="brand-text">
+          <div class="brand-title">Возрождение мира</div>
+          <div class="brand-subtitle">Трогаем. Нюхаем. Исследуем. Думаем.</div>
         </div>
       </div>
 
-      <button id="resetProgressBtn" class="top-btn" type="button">
+      <button id="resetProgressBtn" class="ghost-btn" type="button">
         Сбросить
       </button>
     </header>
 
-    <main class="main">
-      <!-- Старт -->
+    <main class="main-wrap">
+      <!-- СТАРТ -->
       <section id="welcomeScreen" class="screen active">
         <div class="card hero-card">
           <div class="hero-left">
-            <div class="mini-badge">Для малышей</div>
-            <h1>Верни свет в мир</h1>
+            <div class="mini-label">Уровень 1</div>
+            <h1>Возроди свет</h1>
             <p class="hero-text">
-              Нажимай на картинки в правильном порядке,
-              чтобы зажечь волшебную лампочку.
+              Помоги юным учёным АгроУМ вернуть свет в мир.
+              Перетащи детали на свои места и зажги лампочку.
             </p>
 
-            <div class="hero-objects">
-              <div class="hero-item">🍋</div>
-              <div class="hero-item">🔩</div>
-              <div class="hero-item">🔌</div>
-              <div class="hero-item">💡</div>
+            <div class="hero-row">
+              <div class="mini-chip">🍋 лимон</div>
+              <div class="mini-chip">🔩 пластинки</div>
+              <div class="mini-chip">🔴⚫ провода</div>
+              <div class="mini-chip">💡 свет</div>
             </div>
 
             <button id="startGameBtn" class="primary-btn big-btn" type="button">
-              Играть
+              Начать
             </button>
           </div>
 
           <div class="hero-right">
-            <div class="lamp-scene">
-              <div class="light-glow" id="welcomeGlow"></div>
-              <div class="lamp-icon" id="heroLamp">💡</div>
-              <div class="lamp-caption">Свет пока спит...</div>
+            <div class="hero-illustration">
+              <div class="hero-blob blob-1"></div>
+              <div class="hero-blob blob-2"></div>
+
+              <div class="hero-kids-card">
+                <div class="hero-kid">🧒</div>
+                <div class="hero-kid">👧</div>
+                <div class="hero-leaf">🍃</div>
+              </div>
+
+              <div class="hero-lamp-wrap">
+                <div id="welcomeGlow" class="lamp-glow"></div>
+                <div id="welcomeLamp" class="lamp-emoji">💡</div>
+                <div class="hero-lamp-text">Свет спит... пока</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Игра -->
+      <!-- ИГРА -->
       <section id="gameScreen" class="screen">
         <div class="card game-card">
-          <div class="game-top">
+          <div class="game-head">
             <div>
-              <div class="mini-badge">Собери цепочку</div>
-              <h2>Нажимай по порядку</h2>
+              <div class="mini-label">Собери опыт</div>
+              <h2>Лимонный свет</h2>
             </div>
-            <div class="attempt-box">
+
+            <div class="counter-box">
               Ошибки: <span id="attemptsCount">0</span>
             </div>
           </div>
 
-          <div class="game-scene">
-            <div class="scene-lamp-wrap">
-              <div class="scene-light-glow" id="gameGlow"></div>
-              <div class="scene-lamp" id="gameLamp">💡</div>
-            </div>
-
-            <div class="progress-dots">
-              <div class="dot" id="dot1"></div>
-              <div class="dot" id="dot2"></div>
-              <div class="dot" id="dot3"></div>
-            </div>
+          <div class="message-wrap">
+            <div id="gameMessage" class="message-box hidden"></div>
           </div>
 
-          <div class="steps-grid">
-            <button class="step-btn" data-step="plates" type="button" aria-label="Пластины">
-              <span class="step-emoji">🔩</span>
-            </button>
+          <div class="game-layout">
+            <!-- СЦЕНА -->
+            <div id="playground" class="playground">
+              <svg id="wireLayer" class="wire-layer"></svg>
 
-            <button class="step-btn" data-step="wires" type="button" aria-label="Провода">
-              <span class="step-emoji">🔌</span>
-            </button>
+              <div class="table-shadow"></div>
 
-            <button class="step-btn" data-step="led" type="button" aria-label="Лампочка">
-              <span class="step-emoji">💡</span>
-            </button>
-          </div>
+              <!-- лимон -->
+              <div class="lemon-scene">
+                <div class="lemon-body">
+                  <div class="lemon-shine"></div>
+                  <div class="lemon-dot dot-a"></div>
+                  <div class="lemon-dot dot-b"></div>
+                  <div class="lemon-dot dot-c"></div>
+                </div>
 
-          <div id="gameMessage" class="message-box hidden"></div>
+                <div id="target-zinc" class="drop-slot plate-slot zinc-slot" data-accept="zinc">
+                  Zn
+                </div>
+                <div id="target-copper" class="drop-slot plate-slot copper-slot" data-accept="copper">
+                  Cu
+                </div>
+              </div>
 
-          <div class="hint-box">
-            Сначала добавь детали, потом соедини, потом зажги свет
+              <!-- лампа -->
+              <div class="lamp-scene">
+                <div id="gameGlow" class="lamp-light"></div>
+                <div id="gameLamp" class="lamp-bulb">💡</div>
+                <div class="lamp-base"></div>
+
+                <div id="lamp-red" class="drop-slot wire-slot lamp-red-slot" data-accept="wire-red">
+                  +
+                </div>
+                <div id="lamp-black" class="drop-slot wire-slot lamp-black-slot" data-accept="wire-black">
+                  −
+                </div>
+              </div>
+            </div>
+
+            <!-- ПАНЕЛЬ ДЕТАЛЕЙ -->
+            <div class="parts-panel">
+              <h3>Детали</h3>
+              <p class="parts-text">
+                Перетащи детали на правильные места
+              </p>
+
+              <div class="parts-list">
+                <div class="part-card">
+                  <div id="part-zinc" class="draggable part plate zinc" data-part="zinc">
+                    Zn
+                  </div>
+                  <div class="part-label">Цинк</div>
+                </div>
+
+                <div class="part-card">
+                  <div id="part-copper" class="draggable part plate copper" data-part="copper">
+                    Cu
+                  </div>
+                  <div class="part-label">Медь</div>
+                </div>
+
+                <div class="part-card">
+                  <div id="part-wire-red" class="draggable part wire wire-red" data-part="wire-red">
+                    <span class="wire-dot red"></span>
+                    <span class="wire-name">Красный</span>
+                  </div>
+                  <div class="part-label">Провод</div>
+                </div>
+
+                <div class="part-card">
+                  <div id="part-wire-black" class="draggable part wire wire-black" data-part="wire-black">
+                    <span class="wire-dot black"></span>
+                    <span class="wire-name">Чёрный</span>
+                  </div>
+                  <div class="part-label">Провод</div>
+                </div>
+              </div>
+
+              <div class="progress-box">
+                <div class="progress-title">Готово</div>
+                <div class="progress-dots">
+                  <div id="dot-zinc" class="progress-dot"></div>
+                  <div id="dot-copper" class="progress-dot"></div>
+                  <div id="dot-wire-red" class="progress-dot"></div>
+                  <div id="dot-wire-black" class="progress-dot"></div>
+                </div>
+              </div>
+
+              <button id="resetGameBtn" class="secondary-btn" type="button">
+                Начать заново
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Успех -->
+      <!-- УСПЕХ -->
       <section id="successScreen" class="screen">
         <div class="card success-card">
-          <div class="success-top">
-            <div class="success-badge">Ура!</div>
-            <h2>Свет вернулся!</h2>
-            <p class="success-text">
-              Ты помог оживить мир и зажёг первую лампочку.
-            </p>
-          </div>
+          <div class="success-badge">Ура!</div>
+          <h2>Свет вернулся!</h2>
+          <p class="success-text">
+            Ты собрал лимонную батарейку и помог миру снова засветиться.
+          </p>
 
           <div class="success-lamp-wrap">
             <div class="success-glow"></div>
             <div class="success-lamp">💡</div>
+          </div>
+
+          <div class="success-grid">
+            <div class="info-card">
+              <h3>Что получилось</h3>
+              <p>
+                В лимон вставили две пластинки, подключили провода
+                и зажгли лампочку.
+              </p>
+            </div>
+
+            <div class="info-card">
+              <h3>Факт</h3>
+              <p>
+                Лимон помогает получить маленький ток —
+                почти как настоящая батарейка.
+              </p>
+            </div>
           </div>
 
           <div class="reward-card">
@@ -131,7 +224,9 @@
 
           <div class="code-card">
             <h3>Секретный код</h3>
-            <p class="code-text">Введи код с занятия и получи подарок</p>
+            <p class="code-text">
+              Введи код с занятия и получи бонус
+            </p>
 
             <div class="code-row">
               <input
