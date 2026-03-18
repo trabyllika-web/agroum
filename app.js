@@ -49,7 +49,7 @@ function showStoryIntro() {
     <section class="card center-card">
       <div class="story-box">
         <div class="brand-badge" style="display:inline-block">АгроУМ</div>
-        <h1 class="big-title">Мир уснул...</h1>
+        <h1 class="big-title">Мир уснул... </h1>
 
         <div class="story-hero">
           <span>🌍</span>
@@ -93,9 +93,8 @@ function showRules() {
 
         <div class="rules-row">
           <div class="rule-chip">✋ Только по команде</div>
-          <div class="rule-chip">🚫 Не в рот</div>
           <div class="rule-chip">👀 Трогаем нужное</div>
-          <div class="rule-chip">🤝 Помогаем друг другу</div>
+          <div class="rule-chip">🤝 Если незнаешь - попроси помочь родителей!</div>
         </div>
 
         <p class="lead">
